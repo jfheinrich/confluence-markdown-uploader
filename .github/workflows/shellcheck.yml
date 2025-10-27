@@ -29,7 +29,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             # For pull requests, check if any .sh files or the workflow file changed
-            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(sh)$|\.github/workflows/shellcheck\.yml$'; then
+            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(sh)$|\.github/workflows/shellcheck\.yml$' || true; then
               echo "changed=true" >> $GITHUB_OUTPUT
               echo "Relevant files changed, will run checks"
             else
