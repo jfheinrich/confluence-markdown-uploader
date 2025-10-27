@@ -9,15 +9,35 @@ repository:
   # Repository homepage
   homepage: https://github.com/jfheinrich/confluence-markdown-uploader
   
+  # Repository topics for better discoverability
+  topics:
+    - confluence
+    - markdown
+    - shell-script
+    - posix
+    - automation
+    - devops
+  
   # Enable/disable features
   has_issues: true
   has_projects: false
   has_wiki: false
   has_downloads: true
   
-  # Enable automated security fixes
+  # Enable automated security fixes and vulnerability alerts
+  enable_automated_security_fixes: true
+  enable_vulnerability_alerts: true
+  
+  # Merge strategy settings
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: true
   allow_auto_merge: false
   delete_branch_on_merge: true
+  
+  # Default values for squash commits
+  squash_merge_commit_title: PR_TITLE
+  squash_merge_commit_message: PR_BODY
 
 # Branch protection rules
 branches:
@@ -32,8 +52,8 @@ branches:
         dismiss_stale_reviews: true
         # Require review from code owners (defined in CODEOWNERS file)
         require_code_owner_reviews: true
-        # Prevent authors from approving their own PRs
-        require_last_push_approval: false
+        # Prevent authors from approving their own PRs - require approval from someone else after the latest push
+        require_last_push_approval: true
       
       # Require status checks to pass before merging
       required_status_checks:
@@ -67,3 +87,73 @@ branches:
       
       # Restrictions on who can push to the branch
       restrictions: null
+
+# Labels for issues and pull requests
+labels:
+  # Type labels
+  - name: "bug"
+    color: "d73a4a"
+    description: "Something isn't working"
+  
+  - name: "enhancement"
+    color: "a2eeef"
+    description: "New feature or request"
+  
+  - name: "documentation"
+    color: "0075ca"
+    description: "Improvements or additions to documentation"
+  
+  - name: "security"
+    color: "ee0701"
+    description: "Security-related issues or improvements"
+  
+  # Priority labels
+  - name: "priority: high"
+    color: "b60205"
+    description: "High priority issue"
+  
+  - name: "priority: medium"
+    color: "fbca04"
+    description: "Medium priority issue"
+  
+  - name: "priority: low"
+    color: "0e8a16"
+    description: "Low priority issue"
+  
+  # Status labels
+  - name: "good first issue"
+    color: "7057ff"
+    description: "Good for newcomers"
+  
+  - name: "help wanted"
+    color: "008672"
+    description: "Extra attention is needed"
+  
+  - name: "question"
+    color: "d876e3"
+    description: "Further information is requested"
+  
+  - name: "wontfix"
+    color: "ffffff"
+    description: "This will not be worked on"
+  
+  - name: "duplicate"
+    color: "cfd3d7"
+    description: "This issue or pull request already exists"
+  
+  - name: "invalid"
+    color: "e4e669"
+    description: "This doesn't seem right"
+  
+  # Component labels
+  - name: "shell-script"
+    color: "1d76db"
+    description: "Related to shell script implementation"
+  
+  - name: "ci/cd"
+    color: "28a745"
+    description: "Related to CI/CD workflows"
+  
+  - name: "dependencies"
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
