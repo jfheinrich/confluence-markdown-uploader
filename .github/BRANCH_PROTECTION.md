@@ -91,8 +91,27 @@ The repository includes the following GitHub Actions workflows that serve as req
 ## Code Review Requirements
 
 The repository uses a `CODEOWNERS` file (`.github/CODEOWNERS`) that defines:
-- `@jfheinrich` as the default owner for all files
+- `@jfheinrich-eu/maintainers` team as the default owner for all files
 - Automatic review requests for all pull requests
+
+**Important**: For organization-owned repositories, using a team reference (rather than individual users) ensures that code owner reviews are properly recognized by GitHub's branch protection rules.
+
+### Setting up the Maintainers Team
+
+To enable code owner reviews, create a `maintainers` team in the organization:
+
+1. Navigate to the organization settings: https://github.com/orgs/jfheinrich-eu/teams
+2. Click **New team**
+3. Set team name: `maintainers`
+4. Set team description: "Repository maintainers with code owner responsibilities"
+5. Set visibility: **Visible** (recommended) or **Secret**
+6. Click **Create team**
+7. Add members: Add `@jfheinrich` and any other maintainers
+8. Grant repository access: Ensure the team has **Write** or higher access to this repository
+
+Alternatively, if you prefer to use individual user references in CODEOWNERS, ensure that:
+- The user has direct collaborator access with Write, Maintain, or Admin permissions (not just organization membership)
+- The username is exactly as it appears in their GitHub profile
 
 ## Best Practices Applied
 

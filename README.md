@@ -10,4 +10,10 @@ This repository uses branch protection for the `main` branch to ensure code qual
 - Receive approval from code owners
 - Have all conversations resolved
 
-For more details, see [Branch Protection Setup](.github/BRANCH_PROTECTION.md).
+### Code Owners Setup
+
+This repository uses GitHub's CODEOWNERS feature to automatically request reviews from maintainers. For organization-owned repositories, we use a team-based approach to ensure reviews are properly recognized.
+
+If you're setting up this repository or managing code owners, see the [CODEOWNERS Setup Guide](.github/CODEOWNERS_SETUP.md) for detailed instructions.
+
+For more details on branch protection, see [Branch Protection Setup](.github/BRANCH_PROTECTION.md).
