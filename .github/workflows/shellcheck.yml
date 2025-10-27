@@ -4,15 +4,9 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - '**.sh'
-      - '.github/workflows/shellcheck.yml'
   push:
     branches:
       - main
-    paths:
-      - '**.sh'
-      - '.github/workflows/shellcheck.yml'
   workflow_dispatch:
 
 # Restrict permissions of GITHUB_TOKEN for security
@@ -27,8 +21,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Check for relevant file changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For pull requests, check if any .sh files or the workflow file changed
+            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(sh)$|\.github/workflows/shellcheck\.yml$' || true; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "Relevant files changed, will run checks"
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "No relevant files changed, skipping checks"
+            fi
+          else
+            # For push events and workflow_dispatch, always run
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Running checks for push/manual trigger"
+          fi
       
       - name: Run ShellCheck
+        if: steps.filter.outputs.changed == 'true'
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           severity: warning
@@ -38,6 +53,7 @@ jobs:
           SHELLCHECK_OPTS: -x -s sh
       
       - name: Verify POSIX compatibility
+        if: steps.filter.outputs.changed == 'true'
         run: |
           echo "Checking POSIX compatibility of shell scripts..."
           
@@ -66,3 +82,9 @@ jobs:
           done
           
           echo "POSIX compatibility check completed successfully"
+      
+      - name: Report success when no relevant changes
+        if: steps.filter.outputs.changed == 'false'
+        run: |
+          echo "No shell script changes detected - skipping ShellCheck analysis"
+          echo "Workflow completes successfully"
