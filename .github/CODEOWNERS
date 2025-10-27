@@ -1,0 +1,12 @@
+# CODEOWNERS file
+# 
+# This file defines code ownership for the repository.
+# Users or teams listed here will be automatically requested for review
+# when a pull request modifies files matching the patterns.
+#
+# For more information, see:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+# This ensures all PRs get a review request
+* @jfheinrich
