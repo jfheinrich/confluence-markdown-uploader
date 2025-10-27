@@ -1,0 +1,105 @@
+name: POSIX Compliance Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.sh'
+      - '.github/workflows/posix-compliance.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.sh'
+      - '.github/workflows/posix-compliance.yml'
+
+jobs:
+  posix-compliance:
+    name: POSIX Shell Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          # Install dash (Debian Almquist Shell) for POSIX testing
+          sudo apt-get update
+          sudo apt-get install -y dash
+      
+      - name: Test with dash (POSIX shell)
+        run: |
+          echo "Testing shell scripts with dash (POSIX-compliant shell)..."
+          
+          # Find all shell scripts with sh shebang
+          scripts=$(find . -type f -name "*.sh" -not -path "./.git/*")
+          
+          for script in $scripts; do
+            echo "----------------------------------------"
+            echo "Testing: $script"
+            
+            # Check if script has sh shebang
+            if head -n 1 "$script" | grep -q '#!/bin/sh'; then
+              echo "Testing POSIX compatibility with dash..."
+              
+              # Basic syntax check
+              dash -n "$script" && echo "✓ Syntax check passed" || {
+                echo "✗ Syntax check failed for $script"
+                exit 1
+              }
+            else
+              echo "Skipping (not a POSIX sh script)"
+            fi
+          done
+          
+          echo "----------------------------------------"
+          echo "All POSIX compliance tests passed!"
+      
+      - name: Check for common POSIX violations
+        run: |
+          echo "Checking for common POSIX violations..."
+          
+          scripts=$(find . -type f -name "*.sh" -not -path "./.git/*")
+          
+          violations_found=0
+          
+          for script in $scripts; do
+            # Skip if not a sh script
+            if ! head -n 1 "$script" | grep -q '#!/bin/sh'; then
+              continue
+            fi
+            
+            echo "Checking $script..."
+            
+            # Check for local keyword (not POSIX)
+            if grep -n '^[[:space:]]*local ' "$script" | grep -v '#.*local '; then
+              echo "WARNING: 'local' keyword found in $script (not POSIX, but widely supported)"
+            fi
+            
+            # Check for source command (should use . instead)
+            if grep -n '^[[:space:]]*source ' "$script" | grep -v '#.*source '; then
+              echo "ERROR: 'source' command found in $script (use '.' for POSIX)"
+              violations_found=1
+            fi
+            
+            # Check for =~ operator (bash-specific)
+            if grep -n '=~' "$script" | grep -v '#.*=~'; then
+              echo "ERROR: '=~' operator found in $script (not POSIX)"
+              violations_found=1
+            fi
+            
+            # Check for $(((...))) arithmetic (should use $(...))
+            if grep -n '\$(((' "$script" | grep -v '#'; then
+              echo "ERROR: '\$(((' found in $script (use \$((...)) for arithmetic)"
+              violations_found=1
+            fi
+          done
+          
+          if [ $violations_found -eq 1 ]; then
+            echo "POSIX violations found!"
+            exit 1
+          fi
+          
+          echo "No critical POSIX violations found!"
