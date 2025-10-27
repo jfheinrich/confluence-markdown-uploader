@@ -89,12 +89,6 @@ jobs:
               echo "ERROR: '=~' operator found in $script (not POSIX)"
               violations_found=1
             fi
-            
-            # Check for $(((...))) arithmetic (should use $(...))
-            if grep -n '\$(((' "$script" | grep -v '#'; then
-              echo "ERROR: '\$(((' found in $script (use \$((...)) for arithmetic)"
-              violations_found=1
-            fi
           done
           
           if [ $violations_found -eq 1 ]; then

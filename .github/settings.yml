@@ -41,8 +41,8 @@ branches:
         strict: true
         # List of required status checks (will be populated when workflows are added)
         checks:
-          - context: "shellcheck"
-          - context: "posix-compliance"
+          - context: "ShellCheck Analysis"
+          - context: "POSIX Shell Compliance"
       
       # Enforce all configured restrictions for administrators
       enforce_admins: true
