@@ -1,3 +1,4 @@
+name: Automated bot approval for PRs
 # GitHub Actions workflow: Automated bot approval for PRs (machine-user)
 # SECURITY NOTE: This uses pull_request_target so that the workflow can access repository secrets.
 # Do NOT checkout or run untrusted code from the PR. This workflow does not checkout the PR head.
