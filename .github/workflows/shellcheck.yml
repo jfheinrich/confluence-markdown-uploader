@@ -14,6 +14,10 @@ on:
       - '**.sh'
       - '.github/workflows/shellcheck.yml'
 
+# Restrict permissions of GITHUB_TOKEN for security
+permissions:
+  contents: read
+
 jobs:
   shellcheck:
     name: ShellCheck Analysis
