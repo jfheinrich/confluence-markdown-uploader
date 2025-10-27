@@ -25,3 +25,22 @@ To use the script, follow these steps:
 
 ## Example Content
 Here is a sample content you might include in your Markdown file:
+
+### Sample Heading
+
+This is a paragraph describing the purpose of the page. You can use **bold** or *italic* text for emphasis.
+
+#### Bullet List
+- Item one
+- Item two
+- Item three
+
+#### Numbered List
+1. First step
+2. Second step
+3. Third step
+
+#### Code Block
+```python
+def hello_world():
+    print("Hello, Confluence!")
