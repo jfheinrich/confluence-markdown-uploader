@@ -41,9 +41,8 @@ jobs:
           echo "Checking POSIX compatibility of shell scripts..."
           
           # Find all shell scripts
-          scripts=$(find . -type f -name "*.sh" -not -path "./.git/*")
-          
-          for script in $scripts; do
+          # Use find -print0 and while read -d '' to safely handle file paths with spaces
+          find . -type f -name "*.sh" -not -path "./.git/*" -print0 | while IFS= read -r -d '' script; do
             echo "Checking $script..."
             
             # Check for bash-specific features that violate POSIX
