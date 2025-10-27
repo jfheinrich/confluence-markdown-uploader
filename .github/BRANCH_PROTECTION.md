@@ -44,8 +44,8 @@ main
 **Require status checks to pass before merging**
 - ✅ Require branches to be up to date before merging
 - ✅ Status checks that are required:
-  - `shellcheck` - Shell script validation
-  - `posix-compliance` - POSIX compliance verification
+  - `ShellCheck Analysis` - Shell script validation
+  - `POSIX Shell Compliance` - POSIX compliance verification
 
 **Require conversation resolution before merging**
 - ✅ All conversations on code must be resolved
