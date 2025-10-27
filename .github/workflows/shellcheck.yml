@@ -1,0 +1,67 @@
+name: Shell Script Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.sh'
+      - '.github/workflows/shellcheck.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.sh'
+      - '.github/workflows/shellcheck.yml'
+
+# Restrict permissions of GITHUB_TOKEN for security
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: ShellCheck Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+          # Additional shellcheck options
+          additional_files: '*.sh'
+        env:
+          SHELLCHECK_OPTS: -x -s sh
+      
+      - name: Verify POSIX compatibility
+        run: |
+          echo "Checking POSIX compatibility of shell scripts..."
+          
+          # Find all shell scripts
+          # Use find -print0 and while read -d '' to safely handle file paths with spaces
+          find . -type f -name "*.sh" -not -path "./.git/*" -print0 | while IFS= read -r -d '' script; do
+            echo "Checking $script..."
+            
+            # Check for bash-specific features that violate POSIX
+            if grep -n '\[\[' "$script"; then
+              echo "ERROR: Found [[ ]] in $script (use [ ] for POSIX compatibility)"
+              exit 1
+            fi
+            
+            if grep -n 'function ' "$script" | grep -v '#.*function '; then
+              echo "ERROR: Found 'function' keyword in $script (use name() for POSIX compatibility)"
+              exit 1
+            fi
+            
+            # Check shebang
+            if head -n 1 "$script" | grep -q '#!/bin/sh' || head -n 1 "$script" | grep -q '#!/usr/bin/env sh'; then
+              echo "✓ $script has correct POSIX shebang"
+            elif head -n 1 "$script" | grep -q '#!/bin/bash'; then
+              echo "WARNING: $script uses bash shebang (consider #!/bin/sh for POSIX)"
+            fi
+          done
+          
+          echo "POSIX compatibility check completed successfully"
