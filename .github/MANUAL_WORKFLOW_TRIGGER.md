@@ -4,14 +4,20 @@ This document explains how to manually trigger GitHub Actions workflows for any 
 
 ## Background
 
-The Shell Script Validation and POSIX Compliance Check workflows are configured to run automatically when:
-- Shell script files (`.sh`) are modified
-- Workflow configuration files are changed
+The Shell Script Validation and POSIX Compliance Check workflows are configured to run automatically on:
+- All pull requests to the `main` branch
+- All pushes to the `main` branch
 
-However, they can also be triggered manually using the `workflow_dispatch` event, which is useful for:
-- Running tests on documentation-only changes
+The workflows intelligently detect whether shell script files (`.sh`) or workflow configuration files have been modified:
+- If relevant files are changed, the workflows perform full validation checks
+- If no relevant files are changed, the workflows skip the checks but still report success
+
+This ensures that pull requests are never blocked by "waiting for status" issues while maintaining required status checks.
+
+However, workflows can also be triggered manually using the `workflow_dispatch` event, which is useful for:
 - Re-running tests without making code changes
 - Testing specific branches
+- Debugging workflow behavior
 
 ## How to Manually Trigger Workflows
 
@@ -38,16 +44,19 @@ gh workflow run "Shell Script Validation" --ref feature/example-markdown
 gh workflow run "POSIX Compliance Check" --ref feature/example-markdown
 ```
 
-## Running Tests for Pull Request #2
+## Running Tests for Pull Requests
 
-To run all tests on Pull Request #2 (Feature/example-markdown):
+The workflows now automatically run on all pull requests, regardless of which files are changed:
+- If shell scripts or workflow files are modified, full validation is performed
+- If other files (e.g., documentation) are modified, the workflow reports success without running checks
+
+This means you typically don't need to manually trigger workflows. However, if you want to re-run tests:
 
 1. Go to Actions tab
-2. Select "Shell Script Validation"
+2. Select "Shell Script Validation" or "POSIX Compliance Check"
 3. Click "Run workflow"
-4. Select branch: `feature/example-markdown`
+4. Select the desired branch
 5. Click "Run workflow"
-6. Repeat steps 2-5 for "POSIX Compliance Check"
 
 ## Viewing Workflow Results
 
