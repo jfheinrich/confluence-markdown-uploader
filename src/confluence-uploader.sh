@@ -547,7 +547,7 @@ if [ "$UPLOAD_IMAGES" = "true" ]; then
   say INFO_IMG_SEARCH
   # Extract markdown image paths into a temp file (simple regex)
   IMG_CANDIDATES="$(mktemp)"
-  # shellcheck disable=SC2129
+  # shellcheck disable=SC2129,SC3010
   grep -Eo '!\[[^]]*\]\(([^)]+)\)' "$MD_ABS" 2>/dev/null | sed -E 's/!\[[^]]*\]\(([^)"]+)(\"[^"]*\")?\)/\1/g' > "$IMG_CANDIDATES" || true
 
   # Build list of existing local files
