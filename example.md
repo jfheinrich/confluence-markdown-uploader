@@ -24,8 +24,8 @@ This is a complete example file demonstrating all features supported by the `con
 
 4. Install the Lua filters:
    ```bash
-   mkdir -p ~/.local/share/confluence-update
-   cp src/share/*.lua ~/.local/share/confluence-update/
+   mkdir -p ~/.local/share/confluence-uploader
+   cp src/share/*.lua ~/.local/share/confluence-uploader/
    ```
 
 ### Basic Upload
