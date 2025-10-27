@@ -1,6 +1,6 @@
 # Confluence Markdown Uploader
 
-<img src="src/docs/image.png" alt="Confluence Markdown Uploader" width="200" height="200" />
+<img src="src/docs/image.png" alt="Confluence Markdown Uploader" width="200" />
 
 A POSIX-compliant shell script to upload Markdown files as Confluence pages with support for image attachments, interactive parent page selection, and internationalization (English/German).
 
