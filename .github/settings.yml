@@ -38,10 +38,6 @@ repository:
   # Default values for squash commits
   squash_merge_commit_title: "PR_TITLE"
   squash_merge_commit_message: "PR_BODY"
-  
-  # Default values for merge commits
-  merge_commit_title: "PR_TITLE"
-  merge_commit_message: "PR_BODY"
 
 # Branch protection rules
 branches:
@@ -155,7 +151,7 @@ labels:
     description: "Related to shell script implementation"
   
   - name: "ci/cd"
-    color: "0366d6"
+    color: "28a745"
     description: "Related to CI/CD workflows"
   
   - name: "dependencies"
