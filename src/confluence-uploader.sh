@@ -422,8 +422,10 @@ PY
 [ -s "$STORAGE_VALUE_FILE" ] || die "$(msg ERR_EMPTY_STORAGE)"
 
 # --------------------------- Build payloads --------------------------------
+# shellcheck disable=SC2034
 ANCESTORS_JSON=""
 if [ -n "${PARENT_ID:-}" ]; then
+  # shellcheck disable=SC2034
   ANCESTORS_JSON='"ancestors":[{"id": '"${PARENT_ID}"' }],'
 fi
 
