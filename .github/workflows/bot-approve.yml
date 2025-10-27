@@ -23,10 +23,11 @@ jobs:
       BOT_REQUIRED_TEAM: "jfheinrich-eu/maintainers" # informational only; bot must be a member of the CODEOWNERS team
     steps:
       - name: Safety check — ensure BOT_TOKEN is present
-        if: ${{ secrets.BOT_TOKEN == null }}
         run: |
-          echo "ERROR: secrets.BOT_TOKEN is not set. Exiting."
-          exit 1
+          if [ -z "${BOT_TOKEN}" ]; then
+            echo "ERROR: secrets.BOT_TOKEN is not set. Exiting."
+            exit 1
+          fi
 
       - name: Resolve bot login from token
         id: get-bot
@@ -42,7 +43,7 @@ jobs:
       - name: Skip if PR author is the bot
         if: ${{ github.event.pull_request.user.login == steps.get-bot.outputs.login }}
         run: |
-          echo "PR author is the bot (${ { github.event.pull_request.user.login } }). Skipping automated approval to avoid approving own PR."
+          echo "PR author is the bot (${{ github.event.pull_request.user.login }}). Skipping automated approval to avoid approving own PR."
           exit 0
 
       - name: Wait for checks to complete and be successful (timeout 10m)
@@ -91,7 +92,7 @@ jobs:
           REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
           PR="$PR_NUMBER"
           BODY="Automated approval by bot after CI checks passed."
-          echo "Posting APPROVE as bot (${ { steps.get-bot.outputs.login } }) to PR #$PR..."
+          echo "Posting APPROVE as bot (${{ steps.get-bot.outputs.login }}) to PR #$PR..."
           curl -s -X POST \
             -H "Authorization: token $BOT_TOKEN" \
             -H "Accept: application/vnd.github+json" \
