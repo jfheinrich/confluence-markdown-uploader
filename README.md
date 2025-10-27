@@ -69,10 +69,10 @@ sudo apt-get install fzf  # Optional
 
    ```bash
    # Required settings
-   CONF_BASE_URL="https://<your-workspace>.atlassian.net/wiki"
+   CONF_BASE_URL="https://your-workspace.atlassian.net/wiki"
    CONF_EMAIL="your-email@example.com"
-   CONF_API_TOKEN="<your-api-token>"
-   CONF_SPACE_KEY="<your-space-key>"
+   CONF_API_TOKEN="your-api-token"
+   CONF_SPACE_KEY="your-space-key"
    
    # Optional settings
    CONF_PARENT_PAGE_ID=""
