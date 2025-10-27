@@ -33,9 +33,10 @@ jobs:
         id: get-bot
         run: |
           # Determine the bot username from the provided token
-          BOT_LOGIN=$(curl -s -H "Authorization: token $BOT_TOKEN" https://api.github.com/user | python -c "import sys,json;print(json.load(sys.stdin).get('login',''))")
-          if [ -z "$BOT_LOGIN" ]; then
-            echo "ERROR: unable to resolve bot login from BOT_TOKEN"
+          BOT_LOGIN=$(curl --fail -s -H "Authorization: token $BOT_TOKEN" https://api.github.com/user 2>/dev/null | python -c "import sys,json;print(json.load(sys.stdin).get('login',''))")
+          CURL_EXIT_CODE=$?
+          if [ $CURL_EXIT_CODE -ne 0 ] || [ -z "$BOT_LOGIN" ]; then
+            echo "ERROR: unable to resolve bot login from BOT_TOKEN (curl exit code: $CURL_EXIT_CODE)"
             exit 1
           fi
           echo "login=$BOT_LOGIN" >> $GITHUB_OUTPUT
