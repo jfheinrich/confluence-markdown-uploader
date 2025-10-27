@@ -19,4 +19,4 @@
 # This ensures all PRs get a review request
 # For organization-owned repositories, using a team reference ensures
 # that code owner reviews are properly recognized by branch protection rules
-* @jfheinrich-eu/maintainers
+* @jfheinrich-eu/maintainers @jfheinrich-bot
