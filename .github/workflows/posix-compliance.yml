@@ -13,6 +13,7 @@ on:
     paths:
       - '**.sh'
       - '.github/workflows/posix-compliance.yml'
+  workflow_dispatch:
 
 # Restrict permissions of GITHUB_TOKEN for security
 permissions:
