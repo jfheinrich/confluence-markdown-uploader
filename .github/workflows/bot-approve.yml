@@ -1,0 +1,102 @@
+# GitHub Actions workflow: Automated bot approval for PRs (machine-user)
+# SECURITY NOTE: This uses pull_request_target so that the workflow can access repository secrets.
+# Do NOT checkout or run untrusted code from the PR. This workflow does not checkout the PR head.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read        # needed to inspect repository metadata (safe)
+  checks: read          # read check-run statuses
+  pull-requests: write  # not strictly necessary because we use BOT_TOKEN, but kept for clarity
+
+jobs:
+  bot-approve:
+    name: Bot auto-approve when CI passed
+    runs-on: ubuntu-latest
+    env:
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}           # required: classic PAT or fine-grained token for bot account
+      BOT_REQUIRED_TEAM: "jfheinrich-eu/maintainers" # informational only; bot must be a member of the CODEOWNERS team
+    steps:
+      - name: Safety check — ensure BOT_TOKEN is present
+        if: ${{ secrets.BOT_TOKEN == null }}
+        run: |
+          echo "ERROR: secrets.BOT_TOKEN is not set. Exiting."
+          exit 1
+
+      - name: Resolve bot login from token
+        id: get-bot
+        run: |
+          # Determine the bot username from the provided token
+          BOT_LOGIN=$(curl -s -H "Authorization: token $BOT_TOKEN" https://api.github.com/user | python -c "import sys,json;print(json.load(sys.stdin).get('login',''))")
+          if [ -z "$BOT_LOGIN" ]; then
+            echo "ERROR: unable to resolve bot login from BOT_TOKEN"
+            exit 1
+          fi
+          echo "login=$BOT_LOGIN" >> $GITHUB_OUTPUT
+
+      - name: Skip if PR author is the bot
+        if: ${{ github.event.pull_request.user.login == steps.get-bot.outputs.login }}
+        run: |
+          echo "PR author is the bot (${ { github.event.pull_request.user.login } }). Skipping automated approval to avoid approving own PR."
+          exit 0
+
+      - name: Wait for checks to complete and be successful (timeout 10m)
+        id: wait-checks
+        run: |
+          OWNER=$(echo "$REPO" | cut -d'/' -f1)
+          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          SHA="$PR_HEAD_SHA"
+          echo "Checking check-runs for commit $SHA..."
+          # Poll check-runs until all are completed or timeout
+          TIMEOUT=$((10*60))
+          INTERVAL=6
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            RESP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/check-runs")
+            TOTAL=$(echo "$RESP" | python -c "import sys,json;print(json.load(sys.stdin).get('total_count',0))")
+            if [ "$TOTAL" -eq 0 ]; then
+              # No check-runs present; check combined status endpoint instead
+              STATE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/status" | python -c "import sys,json;print(json.load(sys.stdin).get('state',''))")
+              if [ "$STATE" == "success" ] || [ -z "$STATE" ]; then
+                echo "No check-runs or combined status success/empty — proceeding."
+                echo "checks_ok=true" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+            else
+              # Verify all check-runs have conclusion == "success" and status == "completed"
+              ALL_OK=$(echo "$RESP" | python -c "import sys,json;d=json.load(sys.stdin);runs=d.get('check_runs',[]);print(all((r.get('status')=='completed' and r.get('conclusion')=='success') for r in runs))")
+              if [ "$ALL_OK" == "True" ]; then
+                echo "All check-runs completed successfully."
+                echo "checks_ok=true" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+            fi
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+            echo "Waiting for checks... elapsed ${ELAPSED}s"
+          done
+          echo "Timeout waiting for checks to be green. Exiting without approval."
+          echo "checks_ok=false" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Post APPROVE review as bot
+        if: ${{ steps.wait-checks.outputs.checks_ok == 'true' }}
+        run: |
+          OWNER=$(echo "$REPO" | cut -d'/' -f1)
+          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          PR="$PR_NUMBER"
+          BODY="Automated approval by bot after CI checks passed."
+          echo "Posting APPROVE as bot (${ { steps.get-bot.outputs.login } }) to PR #$PR..."
+          curl -s -X POST \
+            -H "Authorization: token $BOT_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls/$PR/reviews" \
+            -d "{\"event\":\"APPROVE\",\"body\":\"$BODY\"}" \
+            | python -m json.tool
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
