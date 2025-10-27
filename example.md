@@ -8,7 +8,7 @@ This is a complete example file demonstrating all features supported by the `con
 
 1. Install required dependencies:
    ```bash
-   brew install pandoc python3
+   brew install pandoc python
    ```
 
 2. For interactive parent selection, install fzf:
