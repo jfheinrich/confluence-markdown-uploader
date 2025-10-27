@@ -10,16 +10,3 @@
 # Default owner for everything in the repo
 # This ensures all PRs get a review request
 * @jfheinrich
-
-# GitHub configuration and documentation
-/.github/ @jfheinrich
-*.md @jfheinrich
-
-# Shell scripts - require review for critical upload functionality
-*.sh @jfheinrich
-
-# Lua filters for pandoc conversion
-*.lua @jfheinrich
-
-# Configuration files
-*.env.example @jfheinrich

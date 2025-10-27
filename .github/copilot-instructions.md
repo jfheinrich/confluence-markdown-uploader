@@ -25,11 +25,12 @@
 - Check for command existence with `command -v` instead of `which`
 - Use `mktemp` for temporary files and clean them up in trap handlers
 - Validate required environment variables early in the script
-- Use meaningful error messages with proper internationalization (i18n)
+- Use meaningful error messages with proper internationalization (i18n) for user-facing messages
+  - Note: Code and comments must be in English; i18n applies only to runtime user messages
 
 ### Python Best Practices
 
-- Follow PEP 8 style guidelines
+- Follow PEP 8 style guidelines (4 spaces for indentation)
 - Use type hints where appropriate
 - Handle exceptions gracefully with specific error messages
 - Use context managers (`with` statements) for file operations
