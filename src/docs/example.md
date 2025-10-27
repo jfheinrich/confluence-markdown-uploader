@@ -8,7 +8,7 @@ This is a complete example file demonstrating all features supported by the `con
 
 1. Install required dependencies:
    ```bash
-   brew install pandoc python
+   brew install pandoc python3
    ```
 
 2. For interactive parent selection, install fzf:
@@ -194,7 +194,7 @@ External image (from URL):
 
 Local image (will be uploaded as attachment when using `--upload-images`):
 
-![Local Image](images/diagram.png)
+![Local Image](images/image.png)
 
 ## Confluence-Specific Features
 
