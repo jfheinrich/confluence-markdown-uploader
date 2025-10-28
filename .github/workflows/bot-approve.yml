@@ -21,6 +21,9 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+      # head repo info (may be a fork). Use these to query check-runs for the commit.
+      PR_HEAD_REPO_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+      PR_HEAD_REPO_NAME: ${{ github.event.pull_request.head.repo.name }}
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}           # required: classic PAT or fine-grained token for bot account
       BOT_REQUIRED_TEAM: "jfheinrich-eu/maintainers" # informational only; bot must be a member of the CODEOWNERS team
     steps:
@@ -57,20 +60,27 @@ jobs:
       - name: Wait for checks to complete and be successful (timeout 10m)
         id: wait-checks
         run: |
-          OWNER=$(echo "$REPO" | cut -d'/' -f1)
-          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          # Prefer head repo (PR source) for check-runs (handles forks). Fall back to base repo.
+          if [ -n "$PR_HEAD_REPO_OWNER" ] && [ -n "$PR_HEAD_REPO_NAME" ]; then
+            OWNER="$PR_HEAD_REPO_OWNER"
+            REPO_NAME="$PR_HEAD_REPO_NAME"
+          else
+            OWNER=$(echo "$REPO" | cut -d'/' -f1)
+            REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          fi
+
           SHA="$PR_HEAD_SHA"
-          echo "Checking check-runs for commit $SHA..."
+          echo "Checking check-runs for commit $SHA in $OWNER/$REPO_NAME..."
           # Poll check-runs until all are completed or timeout
           TIMEOUT=$((10*60))
           INTERVAL=6
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            RESP=$(curl -s -H "Authorization: Bearer $BOT_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/check-runs")
+            RESP=$(curl -s -H "Authorization: token $BOT_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/check-runs")
             TOTAL=$(echo "$RESP" | python -c "import sys,json;print(json.load(sys.stdin).get('total_count',0))")
             if [ "$TOTAL" -eq 0 ]; then
               # No check-runs present; check combined status endpoint instead
-              STATE=$(curl -s -H "Authorization: Bearer $BOT_TOKEN" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/status" | python -c "import sys,json;print(json.load(sys.stdin).get('state',''))")
+              STATE=$(curl -s -H "Authorization: token $BOT_TOKEN" "https://api.github.com/repos/$OWNER/$REPO_NAME/commits/$SHA/status" | python -c "import sys,json;print(json.load(sys.stdin).get('state',''))")
               if [ "$STATE" = "success" ] || [ -z "$STATE" ]; then
                 echo "No check-runs or combined status success/empty — proceeding."
                 echo "checks_ok=true" >> $GITHUB_OUTPUT
@@ -96,13 +106,14 @@ jobs:
       - name: Post APPROVE review as bot
         if: ${{ steps.wait-checks.outputs.checks_ok == 'true' }}
         run: |
+          # Post the approval using the BOT_TOKEN account
           OWNER=$(echo "$REPO" | cut -d'/' -f1)
           REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
           PR="$PR_NUMBER"
           BODY="Automated approval by bot after CI checks passed."
           echo "Posting APPROVE as bot (${{ steps.get-bot.outputs.login }}) to PR #$PR..."
           curl -s -X POST \
-            -H "Authorization: Bearer $BOT_TOKEN" \
+            -H "Authorization: token $BOT_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls/$PR/reviews" \
             -d "{\"event\":\"APPROVE\",\"body\":\"$BODY\"}" \
