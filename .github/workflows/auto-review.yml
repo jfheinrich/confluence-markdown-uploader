@@ -16,7 +16,7 @@ on:
     types:
       - completed
   workflow_run:
-    workflows: ["POSIX Compliance Check", "Shell Script Validation"]
+    workflows: ["POSIX Compliance Check", "Shell Script Validation", "CodeQL"]
     types:
       - completed
 
